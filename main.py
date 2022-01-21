@@ -4,17 +4,23 @@ from random import randint
 
 engine = corp.init(windowTitle='Minecraft', flags=corp.flags.SCALED|corp.flags.RESIZABLE)
 
+game = engine.game
+window = engine.window
+input = game.getService('UserInputService')
+obj = game.getService('Object')
+assets = game.getService('Assets')
+workspace = game.getService('Workspace')
+scriptService = engine.game.getService('ScriptService')
+guiService = engine.game.getService('GUIService')
+
 class Block(Entity):
     def __init__(self, parent: object) -> None:
         super().__init__(parent)
 
     def setup(self) -> None:
-        assets = engine.game.getService('Assets')
         self.image = assets.getImage(self.name.lower())
 
     def update(self, dt: float):
-        input = engine.game.getService('UserInputService')
-        obj = engine.game.getService('Object')
         if input.isCollidingWithMouse(self) and input.isMouseButtonDown('right'):
             obj.remove(self)
 
@@ -51,11 +57,8 @@ class CameraController(GlobalScript):
     def update(self, dt: float) -> None:
         if generationDone:
             speed = 6*dt
-            input = engine.game.getService('UserInputService')
-            workspace = engine.game.getService('Workspace')
             camera = workspace.currentCamera
             mouseRel = input.getMouseRel()
-            window = engine.window
             if camera != None:
                 if input.isMouseButtonDown('middle') or input.isMouseButtonDown('left'):
                     camera.position[0] -= mouseRel[0]/2
@@ -70,12 +73,10 @@ class BaseGui(ScreenGui):
         self.name = 'UI'
 
     def setup(self) -> None:
-        assets = engine.game.getService('Assets')
         assets.loadFont('res/fonts/DisposableDroidBB.ttf', 'pixel')
         assets.loadFont('res/fonts/Ubuntu-Medium.ttf', 'ubuntu', 32)
 
     def update(self) -> None:
-        workspace = engine.game.getService('Workspace')
         global generationDone
         generationDone = len(workspace.childrenQueue)<1
         if generationDone:
@@ -87,7 +88,6 @@ class BaseGui(ScreenGui):
             self.writeText('Generating world...', [180, 180], 1, corp.colors.BLACK, 'ubuntu')
 
 def loadAssets() -> None:
-    assets = engine.game.getService('Assets')
     global blocks
     blocks = ['dirt', 'stone', 'grass']
     i = 1
@@ -97,9 +97,6 @@ def loadAssets() -> None:
         i += 1
 
 def newBlock(type: str, position: list):
-    workspace = engine.game.getService('Workspace')
-    obj = engine.game.getService('Object')
-
     blockTypes: dict = {'grass': Grass(workspace), 'dirt': Dirt(workspace), 'stone': Stone(workspace)}
 
     newBlock = blockTypes[type]
@@ -131,10 +128,6 @@ def setupInputs() -> None:
 
 
 def main() -> None:
-    workspace = engine.game.getService('Workspace')
-    obj = engine.game.getService('Object')
-    scriptService = engine.game.getService('ScriptService')
-    guiService = engine.game.getService('GUIService')
     # setting up
     loadAssets()
 
